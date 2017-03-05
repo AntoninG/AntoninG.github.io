@@ -220,7 +220,7 @@ var FoodListView = Backbone.View.extend({
         var caloriesRemaining = 0;
         var classRemaining    = 'success';
         if (caloriesAccordingProfile != false) {
-            caloriesRemaining = caloriesAccordingProfile - totals['calories'];
+            caloriesRemaining = Math.round((caloriesAccordingProfile - totals['calories']) * 100) / 100;
             if (caloriesRemaining < 0) {
                 classRemaining= 'danger';
             }
