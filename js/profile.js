@@ -20,7 +20,6 @@ var ProfileModel = Backbone.Model.extend({
             App.saveProfile();
             this.get('model').trigger('update');
         }, this);
-        App.saveProfile();
     },
 
     /**
