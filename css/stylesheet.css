@@ -1,4 +1,4 @@
-#search-result li > label, .remove, .quantity-cell {
+#search-result li > .content, #search-result li label  {
     cursor: pointer;
 }
 

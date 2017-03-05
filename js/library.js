@@ -1,3 +1,8 @@
+//TODO calories restantes
+//TODO clean toaster before each new
+//TODO documentation
+//TODO rapport
+
 /**
  * The application model.
  * Contains all models and associated views.
@@ -45,6 +50,7 @@ var App = {
             this.results.remove(result);
             this.savePantry();
         } else {
+            toastr.remove();
             toastr.warning('You already have this food in your pantry.');
         }
     },

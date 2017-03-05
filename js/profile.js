@@ -12,14 +12,38 @@ var ProfileModel = Backbone.Model.extend({
         threshold_sodium  : 5000
     },
 
+    initialize: function() {
+        this.on('change', function() {
+            this.get('model').trigger('update');
+        }, this);
+    },
+
+    /**
+     * Set the age of the profile
+     *
+     * @param {string} value
+     */
     setAge: function(value) {
         this.set({age: value});
     },
 
+    /**
+     * Set the gender of the profile
+     *
+     * @param {string} value
+     */
     setGender: function(value) {
         this.set({gender: value});
     },
 
+    /**
+     * Set the calories threshold
+     *
+     * @param {number} value
+     * @returns {boolean}
+     *      true if the value is set
+     *      false if the value given is invalid
+     */
     setThresholdCalories: function(value) {
         if (!isNaN(value) && value < 50000) {
             this.set({threshold_calories: value});
@@ -29,11 +53,21 @@ var ProfileModel = Backbone.Model.extend({
         }
     },
 
+    /**
+     * Returns the threshold_calories of the profile
+     *
+     * @returns {number|null}
+     */
     getThresholdCalories: function() {
         return this.get('threshold_calories');
     },
 
-
+    /**
+     * Returns the max calories recommended according to the age and gender of user
+     *
+     * @returns {number|boolean}
+     *      returns false if age or gender values are not among the allowed values
+     */
     getCaloriesAccordingProfile: function() {
         switch (this.get('age')) {
             case '0-15':
@@ -70,6 +104,17 @@ var ProfileModel = Backbone.Model.extend({
         }
     },
 
+    /**
+     * Check if all the thresholds are respected, according to the profile.
+     *
+     * @returns {
+     *  {
+     *      calories: boolean,
+     *      saturated_fat: boolean,
+     *      sodium: boolean
+     *  }
+     * }
+     */
     checkThresholdCalories: function() {
         var thresholdsExceeded = {
             calories     : false,
@@ -80,9 +125,6 @@ var ProfileModel = Backbone.Model.extend({
         var totals = this.get('model').getTotals();
 
         var caloriesAccordingProfile = this.getCaloriesAccordingProfile();
-        console.log(this.get('age'));
-        console.log(this.get('gender'));
-        console.log(caloriesAccordingProfile);
         if (caloriesAccordingProfile != false && totals['calories'] >= caloriesAccordingProfile) {
             thresholdsExceeded['calories'] = true;
         }
@@ -98,6 +140,7 @@ var ProfileModel = Backbone.Model.extend({
 
 /**
  * This view represents the ProfileModel.
+ * Listens on change of age, gender and maximum calories inputs
  *
  * @type Backbone.View
  */
@@ -110,29 +153,37 @@ var ProfileView = Backbone.View.extend({
     },
 
     /**
-     * Listens on change event to render the profile
+     * Set the age et the gender on start
      */
     initialize: function() {
         this.$inputsAge     = this.$el.find('#profile-age');
         this.$inputsGender  = this.$el.find('#profile-gender');
         this.$inputThreshold= this.$el.find('#max-calories');
-        this.listenTo(this.model, 'change', this.render);
         this.setAge();
         this.setGender();
-        this.render();
     },
 
+    /**
+     * Set the age of its model
+     */
     setAge: function() {
         this.model.setAge(this.$inputsAge.find('input[type="radio"]:checked').val());
     },
 
+    /**
+     * Set the gender of its model
+     */
     setGender: function() {
         this.model.setGender(this.$inputsGender.find('input[type="radio"]:checked').val());
     },
 
+    /**
+     * Set the calories threshold. If the model return false, an alert is raised.
+     */
     setThresholdCalories: function () {
         var boolean = this.model.setThresholdCalories(Math.round(this.$inputThreshold.val()));
         if (boolean != true) {
+            toastr.remove();
             toastr.error('You gave an invalid value for calories threshold.');
         }
     }

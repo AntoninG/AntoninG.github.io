@@ -57,6 +57,7 @@ var ResultCollection = Backbone.Collection.extend({
             async : true,
             reset : true,
             error : function(collection, response, options) {
+                toastr.remove();
                 toastr.error('An error occured during retrieving of results. Check the console.');
                 console.log(response);
             }
