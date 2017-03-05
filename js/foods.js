@@ -213,7 +213,7 @@ var FoodListView = Backbone.View.extend({
      */
     renderTotals: function() {
         var totals = this.model.getTotals();
-        var thresholdsExceeded       = App.checkThresholds();
+        var thresholdsExceeded       = App.checkThreshold();
         var caloriesAccordingProfile = App.getCaloriesAccordingProfile();
 
         // Checks the remaining calories according to the profile

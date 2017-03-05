@@ -141,8 +141,8 @@ var App = {
      *  }
      * }
      */
-    checkThresholds: function() {
-        return this.profile.checkThresholds();
+    checkThreshold: function() {
+        return this.profile.checkThreshold();
     },
 
     /**
