@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="css/stylesheet.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+
+    <title>Boustifaille</title>
+</head>
+<body>
+
+<!--Form and profile-->
+<nav class="navbar navbar-default" role="navigation">
+    <div class="navbar-header">
+        <a class="navbar-brand" href=""><strong><i class="fa fa-terminal" aria-hidden="true"></i> Boustifaille</strong></a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <ul class="nav navbar-nav navbar-right">
+            <li class="dropdown">
+                <a href="" class="dropdown-toggle navbar-brand" data-toggle="dropdown">For God sakes, what am I eating
+                    ?! <i class="fa fa-cutlery" aria-hidden="true"></i></a>
+            </li>
+        </ul>
+    </div><!-- /.navbar-collapse -->
+</nav>
+
+<div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-4">
+        <div id="search" class="form-group col-sm-12">
+            <h3>Search</h3>
+            <div class="col-xs-9 col-sm-9">
+                <input id="input-saisie" class="saisie form-control" type="text"
+                       placeholder="Type here the food you want">
+            </div>
+
+            <div class="col-xs-3 col-sm-3">
+                <button class="search btn btn-primary">Search</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xs-12 col-sm-12 col-md-8">
+        <h3>Profile</h3>
+        <div class="row" id="profile-detail">
+            <div class="col-xs-12" id="profile-age">
+                <span class="text-lead"><strong>Age</strong></span>
+                <label class="radio-inline">
+                    <input type="radio" name="input-age" id="age-child" value="0-15"> 0 - 15
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="input-age" id="age-teen" value="16-20"> 16 - 20
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="input-age" id="age-adult" value="21-59" checked="checked"> 21 - 59
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="input-age" id="age-senior" value="60+"> 60+
+                </label>
+                <hr/>
+            </div>
+            <div class="col-xs-4" id="profile-gender">
+                <span class="text-lead"><strong>Gender</strong></span>
+                <label class="radio-inline">
+                    <input type="radio" name="input-gender" id="gender-f" value="f" checked="checked"> Female
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="input-gender" id="gender-m" value="m"> Male
+                </label>
+            </div>
+            <div class="col-xs-4" id="profile-calories">
+                <input type="number" min="0" max="50000" step="1" id="max-calories" name="max-calories"
+                       class="form-control" placeholder="Threshold calories (0 to 50000)">
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr/>
+
+<!--Results list-->
+<div class="col-sm-12 col-md-4">
+    <h3>Results</h3>
+    <p>
+        <span class="label label-primary">Calories</span>
+        <span class="label label-success">Saturated fat</span>
+        <span class="label label-info">Sodium</span>
+    </p>
+    <ul id="search-result" class="list-group"></ul>
+</div>
+
+<!-- Pantry table -->
+<div class="col-sm-12 col-md-8">
+    <h3>Pantry</h3>
+    <div class="table-responsive">
+        <table id="pantry-detail" class="table table-striped table-hover">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Calories (kcal)</th>
+                <th>Saturated fat (g)</th>
+                <th>Sodium (mg)</th>
+                <th>Quantity</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot class="text-lead"></tfoot>
+        </table>
+    </div>
+</div>
+
+<!--Result template -->
+<script type="text/template" id="result-template">
+    <div class="content">
+        <label>
+            <%= name %>
+        </label>
+        <p>
+            <span class="label label-primary" title="Calories"><%= calories %> kcal</span>
+            <% if (saturated_fat != null) { %>
+            <span class="label label-success" title="Saturated fat"><%= saturated_fat %> g</span>
+            <% } %>
+            <% if (sodium != null) { %>
+            <span class="label label-info" title="Sodium"><%= sodium %> mg</span>
+            <% } %>
+        </p>
+    </div>
+</script>
+
+<!--Food template-->
+<script type="text/template" id="food-template">
+    <td><i class="fa fa-trash text-danger remove" aria-hidden="true" title="Remove"></i> <%= name %></td>
+    <td><%= Math.round(calories * quantity * 100) / 100 %></td>
+    <td><%= saturated_fat ? Math.round(saturated_fat * quantity * 100) / 100 : 'N/A' %></td>
+    <td><%= sodium ? Math.round(sodium * quantity * 100) / 100 : 'N/A' %></td>
+    <td class="quantity-cell">
+        <i class="fa fa-minus decrement" title="Less" aria-hidden="true"></i>&nbsp;&nbsp;
+        <%= quantity %>&nbsp;&nbsp;
+        <i class="fa fa-plus increment" title="More" aria-hidden="true"></i>
+    </td>
+</script>
+<!-- /.VIEW -->
+
+
+<!-- SCRIPTS BACKBONE AND LIBRARIES NEEDED -->
+<script src="js/libraries/jquery-3.1.1.js"></script>
+<script src="js/libraries/underscore.js"></script>
+<script src="js/libraries/backbone.js"></script>
+
+<!-- BOUSTIFAILLE CORE -->
+<script src="js/results.js"></script>
+<script src="js/search.js"></script>
+<script src="js/profile.js"></script>
+<script src="js/library.js"></script>
+<script src="js/foods.js"></script>
+
+<!--LET'S START-->
+<script type="text/javascript">
+    App.initialize();
+</script>
+<!-- /.SCRIPTS BACKBONE -->
+
+<!--TOASTR-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+        integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+</body>
+</html>
