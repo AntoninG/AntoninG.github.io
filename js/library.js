@@ -1,8 +1,3 @@
-//TODO calories restantes
-//TODO clean toaster before each new
-//TODO documentation
-//TODO rapport
-
 /**
  * The application model.
  * Contains all models and associated views.
@@ -10,6 +5,7 @@
  * This object is also the "hub" allowing all models to communicate without speaking directly.
  * E.g : The ResultCollection has no reason to speak directly to the FoodCollection, it only inform the application
  * that there is a new food to add to the pantry.
+ *
  */
 var App = {
     results : null,
@@ -17,20 +13,23 @@ var App = {
     view    : {},
 
     /**
-     * Initializes the application
-     * Creates the locally stored pantry if it does not already exist
+     * Initializes the application.
+     * Creates the locally stored pantry if it does not already exist, same thing for the profile.
      *
-     * Instantiates two collections : one for results and the other for the pantry plus their view
-     * Instantiates the profile manager and the search view
+     * Instantiates two collections : one for results and the other for the pantry plus their view.
+     * Instantiates the profile manager and the search view.
      */
     initialize: function () {
         if (!localStorage.pantry) {
             localStorage.pantry = JSON.stringify([]);
         }
+        if (!localStorage.profilePantry) {
+            localStorage.profilePantry = JSON.stringify({})
+        }
 
         this.results      = new ResultCollection();
         this.pantry       = new FoodCollection(this.getStoredPantry());
-        this.profile      = new ProfileModel({model: this.pantry});
+        this.profile      = new ProfileModel($.extend(this.getStoredProfile(), {model: this.pantry}));
 
         this.view.search  = new SearchView({model: this.results});
         this.view.profile = new ProfileView({model: this.profile});
@@ -67,14 +66,25 @@ var App = {
     },
 
     /**
-     * Save the pantry locally
+     * Save the pantry locally.
      */
     savePantry: function() {
         localStorage.pantry = JSON.stringify(this.pantry.models);
     },
 
     /**
-     * Returns the value of the search
+     * Save the profile locally.
+     */
+    saveProfile: function() {
+        localStorage.profilePantry = JSON.stringify({
+            age     : this.profile.get('age'),
+            gender  : this.profile.get('gender'),
+            threshold_calories: this.profile.get('threshold_calories')
+        });
+    },
+
+    /**
+     * Returns the value of the search.
      * @see SearchView.getSearch
      *
      * @returns {string}
@@ -84,19 +94,63 @@ var App = {
     },
 
     /**
-     * Returns the locally stored pantry
+     * Returns the locally stored pantry.
+     * In case of error, returns an empty array.
      *
      * @returns {Array}
      */
     getStoredPantry: function () {
-        return JSON.parse(localStorage.pantry);
+        try {
+            return JSON.parse(localStorage.pantry);
+        } catch (error) {
+            return [];
+        }
     },
 
+    /**
+     * Returns the locally stored profile.
+     * In case of error, returns an empty object.
+     *
+     * @returns {Object}
+     */
+    getStoredProfile: function() {
+        try {
+            return JSON.parse(localStorage.profilePantry);
+        } catch (error) {
+            return {};
+        }
+    },
+
+    /**
+     * Returns the calories threshold of the profile.
+     *
+     * @returns {number|null}
+     */
     getThresholdCalories: function() {
         return this.profile.getThresholdCalories();
     },
 
+    /**
+     * Returns and object which indicates if calories, saturated_fat and / or sodium have exceeded their threshold.
+     *
+     * @returns {
+     *  {
+     *      calories: boolean,
+     *      saturated_fat: boolean,
+     *      sodium: boolean
+     *  }
+     * }
+     */
     checkThresholdCalories: function() {
         return this.profile.checkThresholdCalories();
+    },
+
+    /**
+     * Returns the recommended calories according to the user's profile.
+     *
+     * @returns {number|boolean}
+     */
+    getCaloriesAccordingProfile: function() {
+        return this.profile.getCaloriesAccordingProfile();
     }
 };

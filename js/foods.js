@@ -5,7 +5,7 @@
  * @type Backbone.Model
  */
 var FoodModel = Backbone.Model.extend({
-    defaults: {
+    defaults    : {
         id      : null,
         name    : 'Random name',
         calories: 0,
@@ -15,7 +15,7 @@ var FoodModel = Backbone.Model.extend({
     },
 
     /**
-     * Decrement by one the total quantity of the food, until a minimum of 0
+     * Decrement by one the total quantity of the food, until a minimum of 0.
      */
     decrementQuantity: function() {
         if (this.get('quantity') - 1 >= 0) {
@@ -24,7 +24,7 @@ var FoodModel = Backbone.Model.extend({
     },
 
     /**
-     * Increment by one the total quantity of the food, until a maximum of 50
+     * Increment by one the total quantity of the food, until a maximum of 50.
      */
     incrementQuantity: function() {
         if (this.get('quantity') + 1 <= 50) {
@@ -36,15 +36,16 @@ var FoodModel = Backbone.Model.extend({
 /**
  * This object represents the pantry.
  * This is a collection of FoodModel.
+ * @see FoodModel
  *
  * @type Backbone.Collection
  */
 var FoodCollection = Backbone.Collection.extend({
-    model   : FoodModel,
+    model      : FoodModel,
     comparator : 'name',
 
     /**
-     * Listen on change (of a model) event to update the locally stored pantry and inform the profile of its changes
+     * Listens on change (of a model) event to update the locally stored pantry and inform the profile of its changes.
      */
     initialize: function() {
         this.on('change', function() {
@@ -53,12 +54,23 @@ var FoodCollection = Backbone.Collection.extend({
         }, this)
     },
 
+    /**
+     * Returns the total of calories, saturated fat and sodium.
+     *
+     * @returns {
+     *  {
+     *      calories: number,
+     *      saturated_fat: number,
+     *      sodium: number
+     *  }
+     * }
+     */
     getTotals: function() {
         var calories = 0;
         var fat      = 0;
         var sodium   = 0;
 
-
+        // For each model, we add to the total only if it has a quantity and if the corresponding attribute is not empty
         this.models.forEach(function (food) {
             if (!isNaN(food.get('quantity')) && food.get('quantity') > 0) {
                 var quantity = food.get('quantity');
@@ -77,6 +89,7 @@ var FoodCollection = Backbone.Collection.extend({
             }
         });
 
+        // Rounded to the second decimal
         return {
             calories: Math.round(calories * 100) / 100,
             saturated_fat: Math.round(fat * 100) / 100,
@@ -86,8 +99,9 @@ var FoodCollection = Backbone.Collection.extend({
 });
 
 /**
- * This view represent one FoodModel.
+ * This view represent one FoodModel under a li tag.
  * Listens on clicks for removal, increment and decrement.
+ * @see FoodModel
  *
  * @type Backbone.View
  */
@@ -144,7 +158,8 @@ var FoodView = Backbone.View.extend({
 
 /**
  * This view represents the collection FoodCollection.
- * It listens on add event to render
+ * It listens on add event to render only the new model.
+ * @see FoodCollection
  *
  * @type Backbone.View
  */
@@ -152,18 +167,21 @@ var FoodListView = Backbone.View.extend({
     el: '#pantry-detail',
 
     /**
-     * Listens on add event to render only the new FoodModel freshly added
+     * Listens on add event to render only the new FoodModel freshly added.
+     * On update event (the collection changed), the view renders only the total, but this event is compatible with
+     * add event, so, no problem.
      */
     initialize: function() {
         this.$tbody = this.$el.find('tbody');
         this.$tfoot = this.$el.find('tfoot');
+        this.$remaining = this.$el.parent('div').prev();
         this.listenTo(this.model, 'add', this.renderOne);
         this.listenTo(this.model, 'update', this.renderTotals);
         this.render();
     },
 
     /**
-     * Render the FoodModel in parameter, appends it to the list
+     * Render the FoodModel in parameter, appends it to the list.
      *
      * @param {FoodModel} food
      */
@@ -190,21 +208,54 @@ var FoodListView = Backbone.View.extend({
         this.renderTotals();
     },
 
+    /**
+     * Renders the row of totals, at the bottom of the pantry table.
+     */
     renderTotals: function() {
         var totals = this.model.getTotals();
-        var thresholdsExceeded = App.checkThresholdCalories();
+        var thresholdsExceeded       = App.checkThresholdCalories();
+        var caloriesAccordingProfile = App.getCaloriesAccordingProfile();
 
+        // Checks the remaining calories according to the profile
+        var caloriesRemaining = 0;
+        var classRemaining    = 'success';
+        if (caloriesAccordingProfile != false) {
+            caloriesRemaining = caloriesAccordingProfile - totals['calories'];
+            if (caloriesRemaining < 0) {
+                classRemaining= 'danger';
+            }
+        }
+        this.$remaining.html('<strong>Calories remaining : <span class="text-' + classRemaining + '">' + caloriesRemaining.toString() + '</span></strong>');
 
+        // Cleans the toastr to display the next without overload the UI
+        if (toastr !== null) {
+            toastr.remove();
+        }
+
+        // Check if the threshold of sodium has been exceeded
+        // If yes, a toastr is raised and the text is displayed in red
         var classSodiumDanger = "";
         if (thresholdsExceeded['sodium']) {
             classSodiumDanger = 'class="text-danger"';
+
+            if (toastr !== null) {
+                toastr.warning('You exceeded your recommended quantity of sodium (5g).');
+            }
         }
 
+        // Check if the threshold of calories has been exceeded
+        // If yes, a toastr is raised and the text is displayed in red
         var classCaloriesDanger = "";
         if (thresholdsExceeded['calories']) {
             classCaloriesDanger = 'class="text-danger"';
+
+            if (toastr !== null) {
+                toastr.warning('You exceeded your recommended quantity of calories ' +
+                    (caloriesAccordingProfile ? '(' + caloriesAccordingProfile + 'kcal)' : ''));
+            }
         }
 
+        // Appends the row in table footer
         var row = $('<tr></tr>');
         row.append('<td><strong>Total</strong></td>')
             .append('<td><strong ' + classCaloriesDanger + '>' + totals['calories'] + '</strong></td>')

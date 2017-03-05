@@ -1,5 +1,8 @@
 /**
- * This object represents
+ * This object represents a search form.
+ * It is linked to a ResultCollection to populate it on each search.
+ * @see ResultCollection
+ *
  * @type Backbone.View
  */
 var SearchView = Backbone.View.extend({
@@ -9,6 +12,10 @@ var SearchView = Backbone.View.extend({
         'keypress'      : 'actionKey'
     },
 
+    /**
+     * Initialize the view and listens on reset event of the ResultCollection.
+     * Enable each input and button after the collection has finished its reset.
+     */
     initialize : function () {
         this.$button = this.$('.search');
         this.$input  = this.$('#input-saisie');
@@ -20,6 +27,11 @@ var SearchView = Backbone.View.extend({
 
     },
 
+    /**
+     * Disable or enable the input and button of search, according to the boolean parameter.
+     *
+     * @param {boolean} boolean
+     */
     disableInputs: function(boolean) {
         this.$input.prop('disabled', boolean);
         this.$button.prop('disabled', boolean);
@@ -49,9 +61,10 @@ var SearchView = Backbone.View.extend({
     },
 
     /**
-     * Returns the search input (JQuery object)
+     * Returns the search input (JQuery object).
      *
      * @returns {Object}
+     *      a JQuery Object
      */
     getSearch: function() {
         return this.$input;

@@ -11,6 +11,12 @@
     padding: 8px;
 }
 
+.decrement, .increment {
+    cursor: pointer;
+}
+
+
+/** NAVBAR */
 .navbar-default {
     background-color: #337ab7;
     border-color: #337ab7;
