@@ -6,8 +6,8 @@
  */
 var ProfileModel = Backbone.Model.extend({
     defaults : {
-        age     : null,
-        gender  : null,
+        age     : "21-59",
+        gender  : "f",
         threshold_calories: null,
         threshold_sodium  : 5000
     },
