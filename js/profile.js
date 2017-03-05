@@ -119,7 +119,7 @@ var ProfileModel = Backbone.Model.extend({
      *  }
      * }
      */
-    checkThresholdCalories: function() {
+    checkThresholds: function() {
         var thresholdsExceeded = {
             calories     : false,
             saturated_fat: false,

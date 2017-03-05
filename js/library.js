@@ -141,8 +141,8 @@ var App = {
      *  }
      * }
      */
-    checkThresholdCalories: function() {
-        return this.profile.checkThresholdCalories();
+    checkThresholds: function() {
+        return this.profile.checkThresholds();
     },
 
     /**
